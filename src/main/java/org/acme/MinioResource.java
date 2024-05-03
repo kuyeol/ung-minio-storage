@@ -1,35 +1,43 @@
 package org.acme;
 
 
+import com.google.common.base.Strings;
 import io.minio.*;
 import io.minio.errors.*;
+import io.minio.messages.Item;
 import io.quarkus.runtime.StartupEvent;
+import io.smallrye.mutiny.Uni;
+import io.vertx.mutiny.ext.web.multipart.MultipartForm;
+import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
+import java.nio.file.Files;
+import java.nio.file.Files;
+
+import okhttp3.MultipartBody;
+import org.apache.commons.compress.utils.IOUtils;
+
+import org.jboss.resteasy.reactive.RestForm;
+
+import java.nio.file.StandardOpenOption;
 
 
 @Path("/api/user")
 @ApplicationScoped
 public class MinioResource {
-
 
 
     @Inject
@@ -39,29 +47,26 @@ public class MinioResource {
 
     public MinioResource() {
         try {
-            this.minioClient = MinioClient.builder()
-                    .endpoint("http://182.218.135.229:9000")
-                    .credentials("test_user", "test_secret")
-                    .build();
-        } catch ( Exception e) {
+            this.minioClient = MinioClient.builder().endpoint("http://182.218.135.229:9000").credentials("test_user", "test_secret").build();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
     @GET
-    public Response gettest(){
+    public Response gettest() {
         Principal principal = securityContext.getUserPrincipal();
         return Response.ok(principal.getName()).build();
     }
-@GET
-@Path("aasa")
-public Response GETte(){
-    Principal user = securityContext.getUserPrincipal();
-return Response.ok(user.equals(gettest())).build();
-}
 
-String A="alice";
+    @GET
+    @Path("aasa")
+    public Response GETte() {
+        Principal user = securityContext.getUserPrincipal();
+        return Response.ok(user.equals(gettest())).build();
+    }
+
 
     @GET
     @Path("/checkBucket")
@@ -69,25 +74,100 @@ String A="alice";
         Principal user = securityContext.getUserPrincipal();
 
         try {
-            boolean found = minioClient.bucketExists(
-                    BucketExistsArgs.builder().bucket(user.getName()).build());
+            boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(user.getName()).build());
             if (!found) {
-                minioClient.makeBucket(
-                        MakeBucketArgs.builder().bucket(user.getName()).build());
-                return Response.status(Response.Status.CREATED)
-                        .entity("Bucket created for user: " + user.getName()).build();
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(user.getName()).build());
+                return Response.status(Response.Status.CREATED).entity("Bucket created for user: " + user.getName()).build();
             } else {
                 return Response.ok("Bucket already exists for user: " + user.getName()).build();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error occurred while checking bucket.").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error occurred while checking bucket.").build();
         }
     }
+
+    @GET
+    @Path("UP")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public List<String> GETobj(String id) throws Exception, NoSuchAlgorithmException, InvalidKeyException {
+
+        Principal user = securityContext.getUserPrincipal();
+
+        Iterable<Result<Item>> obj       = minioClient.listObjects(ListObjectsArgs.builder().bucket(user.getName()).build());
+        List<String>           objToList = new ArrayList<>();
+        obj.forEach(o -> {
+
+
+            try {
+
+                objToList.add("Filename: " + o.get().objectName() + " | size:" + o.get().size() + "bytes");
+
+            } catch (Exception e) {
+                System.out.println("Error occurred: " + e);
+            }
+        });
+        return objToList;
+
+    }
+
+
+    @GET
+    @Path("/aaaa")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> DDD(String id) throws Exception {
+        return GETobj(id);
+    }
+
+
+    @POST
+    @Path("UPUP")
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadFile(File data )  throws Exception {
+Principal user = securityContext.getUserPrincipal();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 1000; i++) {
+            builder.append(
+                    "Sphinx of black quartz, judge my vow: Used by Adobe InDesign to display font samples. ");
+            builder.append("(29 letters)\n");
+            builder.append(
+                    "Jackdaws love my big sphinx of quartz: Similarly, used by Windows XP for some fonts. ");
+            builder.append("(31 letters)\n");
+            builder.append(
+                    "Pack my box with five dozen liquor jugs: According to Wikipedia, this one is used on ");
+            builder.append("NASAs Space Shuttle. (32 letters)\n");
+            builder.append(
+                    "The quick onyx goblin jumps over the lazy dwarf: Flavor text from an Unhinged Magic Card. ");
+            builder.append("(39 letters)\n");
+            builder.append(
+                    "How razorback-jumping frogs can level six piqued gymnasts!: Not going to win any brevity ");
+            builder.append("awards at 49 letters long, but old-time Mac users may recognize it.\n");
+            builder.append(
+                    "Cozy lummox gives smart squid who asks for job pen: A 41-letter tester sentence for Mac ");
+            builder.append("computers after System 7.\n");
+            builder.append(
+                    "A few others we like: Amazingly few discotheques provide jukeboxes; Now fax quiz Jack! my ");
+            builder.append("brave ghost pled; Watch Jeopardy!, Alex Trebeks fun TV quiz game.\n");
+            builder.append("---\n");
+        }
+
+
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
+        minioClient.putObject(
+                PutObjectArgs.builder().bucket(user.getName()).object(data.getPath()).stream(
+                                bais, bais.available(), -1)
+                        .build());
+        bais.close();
+        System.out.println("my-objectname is uploaded successfully");
+        return Response.ok("File uploaded successfully").build();
+    }
+
+
+    @RestForm("file")
+    public File data;
 }
-
-
 
 /*
 생성자 문제 : 생성자가 MinioResource()발생할 수 있는 예외 목록을 선언하지만 비어 있습니다. 실제로 예외를 발생시키지 않는 한 생성자 선언에서 이러한 예외를 제거해야 합니다.

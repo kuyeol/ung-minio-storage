@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload</title>
+</head>
+<body>
+<button id="uploadButton">Upload File</button>
+<p id="status"></p>
+
+<script>
+    document.getElementById('uploadButton').addEventListener('click', function() {
+        fetch('http://localhost:8080/api/user/UPUP', {
+            method: 'POST',
+            headers: {
+                'Accept': 'text/plain'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('status').textContent = data;
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+    });
+</script>
+
+<input type="file" name="file" id="fileToUpload" file-on-change="fileChanged">
+<input type="hidden" name="filename" id="fileName" value="">
+<input type="hidden" name="mimetype" id="mimeType" value="">
+</div>
+</body>
+</html>
