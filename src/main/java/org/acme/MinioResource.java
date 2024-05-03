@@ -163,7 +163,7 @@ Principal user = securityContext.getUserPrincipal();
         System.out.println("my-objectname is uploaded successfully");
         return Response.ok("File uploaded successfully").build();
     }
-
+//File file = new File(파라미터 전달내용 정의)
 
     @RestForm("file")
     public File data;
