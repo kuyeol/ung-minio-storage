@@ -1,38 +1,28 @@
 package org.acme;
 
 
-import com.google.common.base.Strings;
+
 import io.minio.*;
-import io.minio.errors.*;
 import io.minio.messages.Item;
-import io.quarkus.runtime.StartupEvent;
-import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.ext.web.multipart.MultipartForm;
-import jakarta.annotation.security.PermitAll;
+
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import org.jboss.resteasy.reactive.RestForm;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
+import java.io.ByteArrayInputStream;
+
+import java.io.File;
 import java.util.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.util.*;
-import java.util.logging.Logger;
-import java.nio.file.Files;
-import java.nio.file.Files;
 
-import okhttp3.MultipartBody;
-import org.apache.commons.compress.utils.IOUtils;
 
-import org.jboss.resteasy.reactive.RestForm;
 
-import java.nio.file.StandardOpenOption;
+
+
 
 
 @Path("/api/user")
@@ -43,7 +33,11 @@ public class MinioResource {
     @Inject
     SecurityContext securityContext;
 
+
     private MinioClient minioClient;
+
+
+
 
     public MinioResource() {
         try {
@@ -124,8 +118,10 @@ public class MinioResource {
     @Path("UPUP")
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadFile(File data )  throws Exception {
+    public Response uploadFile()  throws Exception {
+
 Principal user = securityContext.getUserPrincipal();
+
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < 1000; i++) {
             builder.append(
@@ -156,17 +152,20 @@ Principal user = securityContext.getUserPrincipal();
 
         ByteArrayInputStream bais = new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
         minioClient.putObject(
-                PutObjectArgs.builder().bucket(user.getName()).object(data.getPath()).stream(
+                PutObjectArgs.builder().bucket(user.getName()).object("a").stream(
                                 bais, bais.available(), -1)
                         .build());
         bais.close();
         System.out.println("my-objectname is uploaded successfully");
         return Response.ok("File uploaded successfully").build();
     }
-//File file = new File(파라미터 전달내용 정의)
+
 
     @RestForm("file")
     public File data;
+
+
+
 }
 
 /*
