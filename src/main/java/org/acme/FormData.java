@@ -14,5 +14,13 @@ public class FormData{
 @RestForm("file")
   public FileUpload file;
 
+  @RestForm
+    @PartType(MediaType.TEXT_PLAIN)
+    public String filename;
+
+    @RestForm
+    @PartType(MediaType.TEXT_PLAIN)
+    public String mimetype;
+
   
 }
