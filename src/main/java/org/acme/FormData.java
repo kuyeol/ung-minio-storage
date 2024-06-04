@@ -14,6 +14,9 @@ public class FormData{
 @RestForm("file")
   public FileUpload file;
 
+
+  //테스트다
+
   @RestForm
     @PartType(MediaType.TEXT_PLAIN)
     public String filename;
