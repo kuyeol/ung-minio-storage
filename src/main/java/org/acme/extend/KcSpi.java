@@ -13,19 +13,27 @@ public class KcSpi implements Spi {
 
   @Override
   public String getName() {
-    //서비스명
+    //서비스명 users
     return "";
   }
 
   @Override
   public Class<? extends Provider> getProviderClass() {
 
-    //
-    return null;
+    //서비스 클래스 반환 UsersService.class
+    return UsersService.class;
   }
 
   @Override
+  @SuppressWarnings("rawtypes")
   public Class<? extends ProviderFactory> getProviderFactoryClass() {
-    return null;
+
+    /*
+    서비스프로바이더팩토리 클래스 반환
+    UsersServiceProviderFactory.class
+    */
+
+
+    return  UsersServiceProviderFactory.class;
   }
 }

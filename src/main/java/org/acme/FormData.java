@@ -14,7 +14,6 @@ public class FormData{
 @RestForm("file")
   public FileUpload file;
 
-//aasdfsdfasd테스트다
 
 
   @RestForm
